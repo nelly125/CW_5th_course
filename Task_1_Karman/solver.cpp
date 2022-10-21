@@ -115,7 +115,7 @@ vector solver::Runge_Kutta_solver( vector temp_y ) {
     }
   }
   if (output_flag && plot_flag) {
-    system("python3 ./plots.py");
+    system("python3 ./python_scripts/plots.py");
   }
   return temp_y;
 }

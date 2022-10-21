@@ -37,7 +37,7 @@ public:
 
   auto solve_system() -> std::vector<double>;
   auto solve_system_RK_method();
-  auto solve_system_Shooting_method()l
+  auto solve_system_Shooting_method();
   double find_infinity();
   void find_streamlines();
 
