@@ -18,6 +18,3 @@ for file in files:
     ax.scatter3D(data.x, data.y, data.z, c=data.z)
 
 plt.savefig("./results/plots/streamlines3d.png")
-
-
-fig.show()

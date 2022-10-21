@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = pd.read_csv('./results/result.txt', delimiter='\t', names=['F', 'R', 'G', 'res_T', 'H'])
+data = pd.read_csv('./results/result.csv', delimiter='\t', names=['F', 'R', 'G', 'res_T', 'H'])
 
 data["x"] = data.index
 

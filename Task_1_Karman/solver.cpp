@@ -1,6 +1,4 @@
 #include "solver.hpp"
-
-#include <utility>
 #include <fstream>
 #include <iostream>
 #include <cmath>
@@ -9,8 +7,8 @@
 
 #define EPS 1e-5
 
-solver::solver( const vector &y_0, double s_initial, const std::function<vector( double, vector &, double )> &f,
-                double ksi0, double ksin, int n ) {
+solver::solver(const vector &y_0, double s_initial, const std::function<vector(double, vector &, double)> &f,
+               double ksi0, double ksin, int n) {
   y = y_0;
   func = f;
   ksi_0 = ksi0;
@@ -24,10 +22,10 @@ solver::solver( const vector &y_0, double s_initial, const std::function<vector(
 auto solver::solve_system() -> std::vector<double> {
   vector result(y.size());
   if (type == solver_types::Runge_Kutta_method) {
-    result = Runge_Kutta_solver(y);
+    result = Runge_Kutta_solver(y, true, false);
   }
   if (type == solver_types::Shooting_method) {
-    result = Shooting_method(y);
+    result = Shooting_method(y, true, false);
   }
   return result;
 }
@@ -35,13 +33,13 @@ auto solver::solve_system() -> std::vector<double> {
 double solver::find_infinity() {
   vector result(y.size());
   vector result_1(y.size());
-  std::ofstream out_parameters("./results/common_parameters.txt");
-  std::ofstream shooting_output("../results/shooting_parameters.txt");
+  std::ofstream out_parameters("./results/common_parameters.csv");
+  std::ofstream shooting_output("../results/shooting_parameters.csv");
   out_parameters << std::scientific;
   ksi_n = 5;
-  result = Shooting_method(y);
+  result = Shooting_method(y, false, false);
   out_parameters << ksi_n << "\t" << result[0] << "\t" << result[1] << "\t" << result[2] << "\t"
-                                                 << result[3] << "\t" << result[4] << std::endl;
+                 << result[3] << "\t" << result[4] << std::endl;
   double norm;
   y_0_old = y;
 
@@ -51,12 +49,12 @@ double solver::find_infinity() {
       h /= 5;
     }*/
     n_cells = (ksi_n - ksi_0) / h;
-/*    if (eps >= 1e-) {
+  /*  if (int(ksi_n) % 10 == 0) {
       eps /= 10;
     }*/
 
     y_0_old = y_0_new;
-    result_1 = Shooting_method(y_0_new);
+    result_1 = Shooting_method(y_0_new, false, false);
 
     out_parameters << ksi_n << "\t" << result_1[0] << "\t" << result_1[1] << "\t" << result_1[2] << "\t"
                    << result_1[3] << "\t" << result_1[4] << std::endl;
@@ -64,24 +62,22 @@ double solver::find_infinity() {
     norm = vector_norm(result, result_1);
     result = result_1;
 
-//    std::cout << ksi_n << " " << fabs(y_0_old[1] - y_0_new[1]) << " " << fabs(y_0_old[3] - y_0_new[3]) << std::endl;
+    std::cout << ksi_n << " " << fabs(y_0_old[1] - y_0_new[1]) << " " << fabs(y_0_old[3] - y_0_new[3]) << std::endl;
   } while (fabs(y_0_old[1] - y_0_new[1]) + fabs(y_0_old[3] - y_0_new[3]) > 1e-6);
 
-  output_flag = true;
-  stream_flag = true;
-  Runge_Kutta_solver(y_0_old);
+  Runge_Kutta_solver(y_0_old, true, true);
 
   return ksi_n;
 }
 
-vector solver::Runge_Kutta_solver( vector temp_y ) {
+vector solver::Runge_Kutta_solver(vector temp_y, bool output_flag, bool stream_flag) {
   vector k[5];
 
   std::ofstream out;
   if (output_flag) {
-    out.open("./results/result.txt");
+    out.open("./results/result.csv");
     out << std::scientific;
-    std::ofstream out_par("./results/result_parameters.txt");
+    std::ofstream out_par("./results/result_parameters.csv");
     out_par << ksi_n << " " << s << " " << y[1] << " " << y[3] << std::endl;
     out << ksi_0 << "\t" << y[0] << "\t" << y[1] << "\t" << y[2] << "\t" << y[3] << "\t" << y[4] << std::endl;
   }
@@ -116,12 +112,14 @@ vector solver::Runge_Kutta_solver( vector temp_y ) {
   }
   if (output_flag && plot_flag) {
     system("python3 ./python_scripts/plots.py");
+    system("python3 ./python_scripts/streamlines_plot.py");
+
   }
   return temp_y;
 }
 
-vector solver::Shooting_method( const vector &y_new ) {
-  output_flag = false;
+vector solver::Shooting_method(const vector &y_new, bool output_flag, bool stream_flag) {
+
   vector result(y_new.size());
 
   vector derivative_result(y_new.size());
@@ -136,20 +134,20 @@ vector solver::Shooting_method( const vector &y_new ) {
   double j11, j12, j21, j22;
   double delta_alpha;
   double delta_beta;
-  result = Runge_Kutta_solver(shooting_y);
+  result = Runge_Kutta_solver(shooting_y, false, false);
   F = result[0];
   G = result[2];
 
-  while (sqrt(pow(F, 2.) + pow(G - s, 2.)) > eps /*fabs(F) + fabs(G - s) > eps*/) {
+  while (/*sqrt(pow(F, 2.) + pow(G - s, 2.)) > eps*/ fabs(F) + fabs(G - s) > eps) {
     derivative_y = shooting_y;
     derivative_y[1] += h_derivative;
-    derivative_result = Runge_Kutta_solver(derivative_y);
+    derivative_result = Runge_Kutta_solver(derivative_y, false, false);
     f_alpha = (derivative_result[0] - F) / h_derivative;
     g_alpha = (derivative_result[2] - G) / h_derivative;
 
     derivative_y = shooting_y;
     derivative_y[3] += h_derivative;
-    derivative_result = Runge_Kutta_solver(derivative_y);
+    derivative_result = Runge_Kutta_solver(derivative_y, false, false);
     f_beta = (derivative_result[0] - F) / h_derivative;
     g_beta = (derivative_result[2] - G) / h_derivative;
 
@@ -166,15 +164,14 @@ vector solver::Shooting_method( const vector &y_new ) {
     shooting_y[1] -= delta_alpha;
     shooting_y[3] -= delta_beta;
 
-    result = Runge_Kutta_solver(shooting_y);
+    result = Runge_Kutta_solver(shooting_y, false, false);
     F = result[0];
     G = result[2];
 
-    std::cout << shooting_y[1] << " " << shooting_y[3] << std::endl;
+//    std::cout << shooting_y[1] << " " << shooting_y[3] << std::endl;
   }
 
-  output_flag = true;
-  result = Runge_Kutta_solver(shooting_y);
+  result = Runge_Kutta_solver(shooting_y, output_flag, stream_flag);
   y_0_new = shooting_y;
   return result;
 }
@@ -206,8 +203,9 @@ void solver::find_streamlines() {
 //      new_psc.phi = psk.phi + 0.5 *(res[i + 1].G/ res[i + 1].H + res[i].G / res[i].H) * h;
 //      new_psc.zeta = psk.zeta - h;
 
-      new_psc.r = psk.r * (2 * res[i + 1].H - h * res[i + 1].F) / (2 * res[i].H - h * res[i].F) * res[i].H / res[i + 1].H;
-      new_psc.phi = psk.phi + 0.5 *(res[i + 1].G/ res[i + 1].H + res[i].G / res[i].H) * h;
+      new_psc.r = psk.r * (2 * res[i + 1].H - h * res[i + 1].F) / (2 * res[i].H - h * res[i].F) * res[i].H /
+          res[i + 1].H;
+      new_psc.phi = psk.phi + 0.5 * (res[i + 1].G / res[i + 1].H + res[i].G / res[i].H) * h;
       new_psc.zeta = psk.zeta - h;
 
       psk = new_psc;
@@ -216,7 +214,15 @@ void solver::find_streamlines() {
     }
   }
 
+}
 
+void solver::solve_system_RK_method(vector y, bool output_flag, bool stream_flag) {
+  vector result(y.size());
+  result = Runge_Kutta_solver(y, true, false);
+}
 
+void solver::solve_system_Shooting_method(vector y, bool output_flag, bool stream_flag) {
+  vector result(y.size());
+  result = Shooting_method(y, true, false);
 }
 
