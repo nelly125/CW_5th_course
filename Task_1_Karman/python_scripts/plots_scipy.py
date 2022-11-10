@@ -1,9 +1,10 @@
-import numpy as np
+# Скрипт для построения решения с использованием метода Рунге-Кутты в SciPy
+
 import matplotlib.pyplot as plt
-import pylab
+import numpy as np
 import scipy.integrate
 
-s = 0.5
+s = -0.1575
 
 def f(ksi, y):
     F = y[0]
@@ -19,14 +20,16 @@ def f(ksi, y):
     dH = -2 * F
     return [dF, dR, dG, dT, dH]
 
-
-initial_condition = [0,  0.391, 1, -0.4176, 0]
+initial_condition = [0, 0.47501806, 1, -0.56736644, 0]
 # print(f(0, [1, 1, 25, 1, 1]));
 left_boarder = 0
-right_boarder = 5
+right_boarder = 20
 
-res = scipy.integrate.solve_ivp(fun=f, t_span=[0., 75.], y0=initial_condition, method='RK45',
-                                t_eval=np.linspace(left_boarder, right_boarder, 1000))
+res = scipy.integrate.solve_ivp(fun=f, t_span=[0., right_boarder], y0=initial_condition, method='BDF',
+                                t_eval=np.linspace(left_boarder, right_boarder, 10000))
+
+print(len(res.y[4]))
+
 
 fig = plt.figure(figsize=(20, 15))
 plt.plot(res.t, res.y[0], linewidth=4, markersize=1.0, label="F")
