@@ -94,18 +94,6 @@ void ADT_solver( const uint32_t n,
   }
 }
 
-/*void H_dependency() {
-
-  std::vector<double> H = {0.1, 0.5, 1, 2, 5, 10};
-
-  for (auto h : H) {
-    std::ofstream output_psi("./results/ADT_output_psi_H_" + std::to_string(h) + ".txt");
-    std::ofstream output_cp("./results/ADT_output_H_" + std::to_string(h) + ".txt");
-
-    ADT_solver(1000, h, sqrt(2), output_psi, output_cp);
-  }
-}*/
-
 void H_dependency() {
 
   std::vector<double> H = {1. / 3, 0.5, 1, 5, 10};
@@ -124,11 +112,11 @@ void N_M_dependency() {
   std::vector<uint32_t> M = {100, 500, 1000};
 
   for (auto n : N) {
-//    for (auto m : M) {
-    std::ofstream output_cp("./results/ADT_output_N_" + std::to_string(n) + "_M_" + std::to_string(n) + ".txt");
+    for (auto m : M) {
+    std::ofstream output_cp("./results/ADT_output_N_" + std::to_string(n) + "_M_" + std::to_string(m) + ".txt");
 
     ADT_solver(n, n, 1. / 3, sqrt(2), output_cp, output_cp);
-//    }
+    }
   }
 }
 
