@@ -64,15 +64,6 @@ void ADT_solver( const uint32_t n,
 
   }
 
-/*  output_cp << "x\tC_p\texact" << std::endl;
-  for (uint32_t i = 0; i < N + 1; ++i) {
-    double x          = x_left + i * dx;
-    double exact_beta = sqrt(pow(M_infty, 2.) - 1);
-    double C_p        = -2 * (1 / (pow(M_infty, 2.) - 1) * (psi[i][1] - psi[i][0]) / (dy));
-    double exact_C_p  = (-4 * eps * x) / exact_beta;
-    output_cp << x << "\t" << C_p << "\t" << exact_C_p << std::endl;
-  }*/
-
   output_cp << std::scientific << std::setprecision(6);
   output_cp << "x\tC_p\texact" << std::endl;
   for (uint32_t i = 0; i < N + 1; ++i) {
@@ -113,9 +104,9 @@ void N_M_dependency() {
 
   for (auto n : N) {
     for (auto m : M) {
-    std::ofstream output_cp("./results/ADT_output_N_" + std::to_string(n) + "_M_" + std::to_string(m) + ".txt");
+      std::ofstream output_cp("./results/ADT_output_N_" + std::to_string(n) + "_M_" + std::to_string(m) + ".txt");
 
-    ADT_solver(n, n, 1. / 3, sqrt(2), output_cp, output_cp);
+      ADT_solver(n, n, 1. / 3, sqrt(2), output_cp, output_cp);
     }
   }
 }
