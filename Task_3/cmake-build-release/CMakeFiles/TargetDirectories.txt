@@ -1,3 +1,0 @@
-/home/nelly/Documents/MSU/CW_5th_course/Task_3/cmake-build-release/CMakeFiles/Task_3.dir
-/home/nelly/Documents/MSU/CW_5th_course/Task_3/cmake-build-release/CMakeFiles/edit_cache.dir
-/home/nelly/Documents/MSU/CW_5th_course/Task_3/cmake-build-release/CMakeFiles/rebuild_cache.dir
